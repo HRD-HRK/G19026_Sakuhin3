@@ -17,6 +17,14 @@
 #define FONT_PATH_MAX   255
 #define PATH_MAX   255
 
+//#define FONT_TANU_PATH         TEXT("TanukiMagic.ttf")
+//#define FONT_TANU_NAME         TEXT("たぬき油性マジック")
+
+#define FONT_MS_PATH           TEXT("chogokubosogothic.ttf")
+#define FONT_MS_NAME           TEXT("超極細ゴシック")
+
+#define FONT_INSTALL_ERR_TITLE TEXT("フォントインストールエラー")
+#define FONT_CREATE_ERR_TITLE  TEXT("フォント作成エラー")
 
 #define IMAGE_LOAD_ERR_TITLE   TEXT("画像読み込みエラー")
 
@@ -31,6 +39,14 @@
 #define IMAGE_TITLE_ROGO_ROTA_MAX 1.0
 #define IMAGE_TITLE_ROGO_X_SPEED  1
 
+#define IMAGE_END_COMP_PATH       TEXT(".\\IMAGE\\end1.png")
+#define IMAGE_END_COMP_CNT        1
+#define IMAGE_END_COMP_CNT_MAX    30
+
+#define IMAGE_END_FAIL_PATH       TEXT(".\\IMAGE\\end2.png")
+#define IMAGE_END_FAIL_CNT        1
+#define IMAGE_END_FAIL_CNT_MAX    30
+
 #define IMAGE_BACK_REV_PATH    TEXT(".\\IMAGE\\toshi.png")
 #define IMAGE_BACK_NUM         4
 
@@ -41,8 +57,10 @@
 #define MUSIC_BGM2_PATH        TEXT(".\\MUSIC\\牢獄.mp3")
 
 #define MUSIC_BGM_TITLE_PATH        TEXT(".\\MUSIC\\Gliese_(Prod._by_Mr_Kimy).mp3")
+#define MUSIC_BGM_COMP_PATH         TEXT(".\\MUSIC\\famipop3.mp3")
+#define MUSIC_BGM_FAIL_PATH         TEXT(".\\MUSIC\\牢獄.mp3")
 
-//#define ENEMY_MAX              5
+#define ENEMY_MAX              5
 
 #define GAME_MAP_TATE_MAX      8
 #define GAME_MAP_YOKO_MAX      15
@@ -64,6 +82,7 @@
 
 #define ESCAPE_CLICK_TITLE    TEXT("ゲーム中断")
 #define ESCAPE_CLICK_CAPTION  TEXT("ゲームを中断し、タイトル画面に戻りますか？")
+
 
 enum GAME_MAP_KIND
 {
@@ -215,6 +234,8 @@ int GameScene;
 int GameEndkind;
 RECT GoalRect = { -1,-1,-1,-1 };
 
+//IMAGE ImageBack;
+
 IMAGE_BACK ImageBack[IMAGE_BACK_NUM];
 
 IMAGE ImageTitleBk;
@@ -226,6 +247,10 @@ IMAGE_BLINK ImageEndFAIL;
 
 CHARA player;
 
+ENEMY enemy[ENEMY_MAX];
+iPOINT enemyPt[ENEMY_MAX] = { {-1,-1} };
+int enemyCnt = 0;
+
 MUSIC BGM;
 
 MUSIC BGM_TITLE;
@@ -235,12 +260,12 @@ MUSIC BGM_FAIL;
 
 GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
 	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,
-	k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,
-	k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,
+	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,
+	k,t,t,t,t,t,k,t,t,t,e,t,t,t,k,
 	k,t,t,t,t,t,k,t,t,k,t,t,t,t,k,
 	k,t,k,k,k,k,k,t,k,t,k,k,t,t,k,
-	k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,
-	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,
+	k,t,t,t,e,t,k,t,k,t,t,t,t,t,k,
+	k,t,t,e,t,t,t,t,t,t,t,t,e,t,k,
 	k,s,k,k,k,k,k,k,k,k,k,k,k,k,k
 };
 
@@ -262,6 +287,11 @@ VOID MY_ALL_KEYDOWN_UPDATE(VOID);
 BOOL MY_KEY_DOWN(int);
 BOOL MY_KEY_UP(int);
 BOOL MY_KEYDOWN_KEEP(int, int);
+
+BOOL MY_FONT_INSTALL_ONCE(VOID);
+VOID MY_FONT_UNINSTALL_ONCE(VOID);
+BOOL MY_FONT_CREATE(VOID);
+VOID MY_FONT_DELETE(VOID);
 
 VOID MY_START(VOID);
 VOID MY_START_PROC(VOID);
@@ -309,6 +339,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 
 	if (MY_LOAD_MUSIC() == FALSE) { return -1; }
 
+	if (MY_FONT_INSTALL_ONCE() == FALSE) { return -1; }
+
+	if (MY_FONT_CREATE() == FALSE) { return -1; }
+
 	SetMouseDispFlag(TRUE);
 
 	GameScene = GAME_SCENE_START;
@@ -335,6 +369,14 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 				GoalRect.bottom = mapChip.height * (tate + 1);
 			}
 
+			if (mapData[tate][yoko] == e && enemyCnt < ENEMY_MAX)
+			{
+				enemyPt[enemyCnt].x = mapChip.width * yoko + mapChip.width / 2;
+				enemyPt[enemyCnt].y = mapChip.height * tate + mapChip.height / 2;
+				enemy[enemyCnt].view = TRUE;
+				enemyCnt++;
+				map[tate][yoko].kind = t;
+			}
 		}
 	}
 
@@ -381,6 +423,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 	}
 
 	//SetClassLong(GetMainWindowHandle(), GCL_HCURSOR, OldWindowClass);
+
+	MY_FONT_DELETE();
+
+	MY_FONT_UNINSTALL_ONCE();
 
 	MY_DELETE_IMAGE();
 
@@ -491,6 +537,44 @@ BOOL MY_KEYDOWN_KEEP(int KEY_INPUT_, int DownTime)
 	}
 }
 
+BOOL MY_FONT_INSTALL_ONCE(VOID)
+{
+	if (AddFontResourceEx(FONT_MS_PATH, FR_PRIVATE, NULL) == 0)
+	{
+		MessageBox(GetMainWindowHandle(), FONT_MS_NAME, FONT_INSTALL_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+VOID MY_FONT_UNINSTALL_ONCE(VOID)
+{
+	RemoveFontResourceEx(FONT_MS_PATH, FR_PRIVATE, NULL);
+
+	return;
+}
+
+BOOL MY_FONT_CREATE(VOID)
+{
+	strcpy_s(MS.path, sizeof(MS.path), FONT_MS_PATH);
+	strcpy_s(MS.name, sizeof(MS.name), FONT_MS_NAME);
+	MS.handle = -1;
+	MS.size = 40;
+	MS.bold = 1;
+	MS.type = DX_FONTTYPE_EDGE;
+
+	MS.handle = CreateFontToHandle(MS.name, MS.size, MS.bold, MS.type);
+	if (MS.handle == -1) { MessageBox(GetMainWindowHandle(), FONT_MS_NAME, FONT_CREATE_ERR_TITLE, MB_OK); return FALSE; }
+
+	return TRUE;
+}
+
+VOID MY_FONT_DELETE(VOID)
+{
+	DeleteFontToHandle(MS.handle);
+
+	return;
+}
 
 VOID MY_START(VOID)
 {
@@ -531,6 +615,18 @@ VOID MY_START_PROC(VOID)
 
 		SetMousePoint(player.image.x, player.image.y);
 
+		for (int i = 0; i < enemyCnt; i++)
+		{
+			enemy[i].Moveadd = 1;
+
+			enemy[i].view = TRUE;
+
+			enemy[i].CenterX = enemyPt[i].x;
+			enemy[i].CenterY = enemyPt[i].y;
+
+			enemy[i].image.x = enemy[i].CenterX;
+			enemy[i].image.y = enemy[i].CenterY;
+		}
 
 		GameEndkind = GAME_END_FAIL;
 
@@ -703,6 +799,47 @@ VOID MY_PLAY_PROC(VOID)
 		return;
 	}
 
+	for (int i = 0; i < enemyCnt; i++)
+	{
+		if (enemy[i].view == TRUE)
+		{
+			enemy[i].CenterX += enemy[i].Moveadd;
+			if (MY_CHECK_MAP1_PLAYER_COLL(enemy[i].coll) == TRUE)
+			{
+				enemy[i].CenterX -= enemy[i].Moveadd * 2;
+				enemy[i].Moveadd *= -1;
+			}
+			enemy[i].coll.left = enemy[i].CenterX - mapChip.width / 2 + 5;
+			enemy[i].coll.top = enemy[i].CenterY - mapChip.height / 2 + 5;
+			enemy[i].coll.right = enemy[i].CenterX + mapChip.width / 2 - 5;
+			enemy[i].coll.bottom = enemy[i].CenterY + mapChip.height / 2 - 5;
+
+			if (enemy[i].image.x >= 0 && enemy[i].image.x <= GAME_WIDTH)
+			{
+				enemy[i].image.x = enemy[i].CenterX - enemy[i].image.width / 2;
+				enemy[i].image.y = enemy[i].CenterY - enemy[i].image.height / 2;
+
+				enemy[i].collBeforePt.x = enemy[i].CenterX;
+				enemy[i].collBeforePt.y = enemy[i].CenterY;
+			}
+
+			if (MY_CHECK_RECT_COLL(PlayerRect, enemy[i].coll) == TRUE)
+			{
+				if (CheckSoundMem(BGM.handle) != 0)
+				{
+					StopSoundMem(BGM.handle);
+				}
+
+				SetMouseDispFlag(TRUE);
+
+				GameEndkind = GAME_END_FAIL;
+
+				GameScene = GAME_SCENE_END;
+
+				return;
+			}
+		}
+	}
 
 	if (player.image.x > GAME_WIDTH || player.image.y > GAME_HEIGHT
 		|| player.image.x + player.image.width < 0 || player.image.y + player.image.height < 0)
@@ -768,12 +905,12 @@ VOID MY_PLAY_DRAW(VOID)
 
 	DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
 
-	//for (int i = 0; i < enemyCnt; i++)
-	//{
-	//	if (enemy[i].view == TRUE) {
-	//		DrawGraph(enemy[i].image.x, enemy[i].image.y, enemy[i].image.handle, TRUE);
-	//	}
-	//}
+	for (int i = 0; i < enemyCnt; i++)
+	{
+		if (enemy[i].view == TRUE) {
+			DrawGraph(enemy[i].image.x, enemy[i].image.y, enemy[i].image.handle, TRUE);
+		}
+	}
 
 	return;
 }
@@ -804,15 +941,100 @@ VOID MY_END_PROC(VOID)
 		return; /*returnがないと関数が終われない*/
 	}
 
+	switch (GameEndkind)
+	{
+	case GAME_END_COMP:
+
+		if (CheckSoundMem(BGM_COMP.handle) == 0)
+		{
+			ChangeVolumeSoundMem(255 * 30 / 100, BGM_COMP.handle);
+
+			//DX_PLAYTYPE_NORMAL;
+			//DX_PLAYTYPE_BACK;
+			//DX_PLAYTYPE_LOOP;
+			PlaySoundMem(BGM_COMP.handle, DX_PLAYTYPE_LOOP);
+		}
+
+		if (ImageEndCOMP.Cnt < ImageEndCOMP.CntMAX)
+		{
+			ImageEndCOMP.Cnt += IMAGE_END_COMP_CNT;
+		}
+		else
+		{
+			if (ImageEndCOMP.IsDraw == FALSE)
+			{
+				ImageEndCOMP.IsDraw = TRUE;
+			}
+			else if (ImageEndCOMP.IsDraw == TRUE)
+			{
+				ImageEndCOMP.IsDraw = FALSE;
+			}
+			ImageEndCOMP.Cnt = 0;
+		}
+		break;
+
+	case GAME_END_FAIL:
+
+		if (CheckSoundMem(BGM_FAIL.handle) == 0)
+		{
+			ChangeVolumeSoundMem(255 * 20 / 100, BGM_FAIL.handle);
+
+			//DX_PLAYTYPE_NORMAL;
+			//DX_PLAYTYPE_BACK;
+			//DX_PLAYTYPE_LOOP;
+			PlaySoundMem(BGM_FAIL.handle, DX_PLAYTYPE_LOOP);
+		}
+
+		if (ImageEndFAIL.Cnt < ImageEndFAIL.CntMAX)
+		{
+			ImageEndFAIL.Cnt += IMAGE_END_FAIL_CNT;
+		}
+		else
+		{
+			if (ImageEndFAIL.IsDraw == FALSE)
+			{
+				ImageEndFAIL.IsDraw = TRUE;
+			}
+			else if (ImageEndFAIL.IsDraw == TRUE)
+			{
+				ImageEndFAIL.IsDraw = FALSE;
+			}
+			ImageEndFAIL.Cnt = 0;
+		}
+		break;
+	}
 	return;
 }
 
 VOID MY_END_DRAW(VOID)
 {
-	DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 0, 255), TRUE);
+	//DrawBox(10, 10, GAME_WIDTH - 10, GAME_HEIGHT - 10, GetColor(0, 0, 255), TRUE);
 
 	MY_PLAY_DRAW();
 
+	switch (GameEndkind)
+	{
+	case GAME_END_COMP:
+
+		DrawGraph(ImageEndCOMP.image.x, ImageEndCOMP.image.y, ImageEndCOMP.image.handle, TRUE);
+
+		//if (ImageEndCOMP.IsDraw == TRUE)
+		//{
+		//	DrawGraph(ImageEndCOMP.image.x, ImageEndCOMP.image.y, ImageEndCOMP.image.handle, TRUE);
+		//}
+		break;
+
+	case GAME_END_FAIL:
+
+		DrawGraph(ImageEndFAIL.image.x, ImageEndFAIL.image.y, ImageEndFAIL.image.handle, TRUE);
+
+		//if (ImageEndFAIL.IsDraw == TRUE)
+		//{
+		//	DrawGraph(ImageEndFAIL.image.x, ImageEndFAIL.image.y, ImageEndFAIL.image.handle, TRUE);
+		//}
+		break;
+
+	}
 
 	DrawString(0, 0, "スタート画面(エスケープキーを押してください)", GetColor(255, 255, 255));
 	return;
@@ -845,6 +1067,34 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageTitleROGO.angleMAX = DX_PI * 2;
 	ImageTitleROGO.rate = 0.0;
 	ImageTitleROGO.rateMAX = IMAGE_TITLE_ROGO_ROTA_MAX;
+
+	strcpy_s(ImageEndCOMP.image.path, IMAGE_END_COMP_PATH);
+	ImageEndCOMP.image.handle = LoadGraph(ImageEndCOMP.image.path);
+	if (ImageEndCOMP.image.handle == -1)
+	{
+		MessageBox(GetMainWindowHandle(), IMAGE_END_COMP_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndCOMP.image.handle, &ImageEndCOMP.image.width, &ImageEndCOMP.image.height);
+	ImageEndCOMP.image.x = GAME_WIDTH / 2 - ImageEndCOMP.image.width / 2;
+	ImageEndCOMP.image.y = GAME_HEIGHT / 2 - ImageEndCOMP.image.height / 2;
+	ImageEndCOMP.Cnt = 0.0;
+	ImageEndCOMP.CntMAX = IMAGE_END_COMP_CNT_MAX;
+	ImageEndCOMP.IsDraw = FALSE;
+
+	strcpy_s(ImageEndFAIL.image.path, IMAGE_END_FAIL_PATH);
+	ImageEndFAIL.image.handle = LoadGraph(ImageEndFAIL.image.path);
+	if (ImageEndFAIL.image.handle == -1)
+	{
+		MessageBox(GetMainWindowHandle(), IMAGE_END_FAIL_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndFAIL.image.handle, &ImageEndFAIL.image.width, &ImageEndFAIL.image.height);
+	ImageEndFAIL.image.x = GAME_WIDTH / 2 - ImageEndFAIL.image.width / 2;
+	ImageEndFAIL.image.y = GAME_HEIGHT / 2 - ImageEndFAIL.image.height / 2;
+	ImageEndFAIL.Cnt = 0.0;
+	ImageEndFAIL.CntMAX = IMAGE_END_COMP_CNT_MAX;
+	ImageEndFAIL.IsDraw = FALSE;
 
 
 
@@ -895,6 +1145,22 @@ BOOL MY_LOAD_IMAGE(VOID)
 	player.CenterY = player.image.y + player.image.height / 2;
 	player.speed = CHARA_SPEED_HIGH;
 
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		strcpy_s(enemy[i].image.path, IMAGE_ENEMY_PATH);
+		enemy[i].image.handle = LoadGraph(enemy[i].image.path);
+		if (enemy[i].image.handle == -1)
+		{
+			MessageBox(GetMainWindowHandle(), IMAGE_ENEMY_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+			return(FALSE);
+		}
+		GetGraphSize(enemy[i].image.handle, &enemy[i].image.width, &enemy[i].image.height);
+		enemy[i].image.x = GAME_WIDTH / 2 - enemy[i].image.width / 2;
+		enemy[i].image.y = GAME_HEIGHT / 2 - enemy[i].image.height / 2;
+		enemy[i].CenterX = enemy[i].image.x + enemy[i].image.width / 2;
+		enemy[i].CenterY = enemy[i].image.y + enemy[i].image.height / 2;
+		enemy[i].speed = CHARA_SPEED_LOW;
+	}
 
 	int mapRes = LoadDivGraph(
 		GAME_MAP_PATH,
@@ -928,9 +1194,9 @@ BOOL MY_LOAD_IMAGE(VOID)
 
 	}
 
-	for (int tate = 0; tate <= GAME_MAP_TATE_MAX; tate++)
+	for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko <= GAME_MAP_YOKO_MAX; yoko++)
+		for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 		{
 			mapColl[tate][yoko].left = (yoko + 0) * mapChip.width + 1;
 			mapColl[tate][yoko].top = (tate + 0) * mapChip.height + 1;
@@ -953,7 +1219,7 @@ VOID MY_DELETE_IMAGE(VOID)
 	}
 	DeleteGraph(player.image.handle);
 
-	//for (int i = 0; i < ENEMY_MAX; i++)DeleteGraph(enemy[i].image.handle);
+	for (int i = 0; i < ENEMY_MAX; i++)DeleteGraph(enemy[i].image.handle);
 
 	DeleteGraph(ImageTitleBk.handle);
 	DeleteGraph(ImageTitleROGO.image.handle);
@@ -994,6 +1260,22 @@ BOOL MY_LOAD_MUSIC(VOID)
 		return FALSE;
 	}
 
+	strcpy_s(BGM_COMP.path, MUSIC_BGM_COMP_PATH);
+	BGM_COMP.handle = LoadSoundMem(BGM_COMP.path);
+	if (BGM_COMP.handle == -1)
+	{
+		MessageBox(GetMainWindowHandle(), MUSIC_BGM_COMP_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
+	strcpy_s(BGM_FAIL.path, MUSIC_BGM_FAIL_PATH);
+	BGM_FAIL.handle = LoadSoundMem(BGM_FAIL.path);
+	if (BGM_FAIL.handle == -1)
+	{
+		MessageBox(GetMainWindowHandle(), MUSIC_BGM_FAIL_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -1003,8 +1285,8 @@ VOID MY_DELETE_MUSIC(VOID)
 	DeleteSoundMem(BGM.handle2);
 
 	DeleteSoundMem(BGM_TITLE.handle);
-	//DeleteSoundMem(BGM_COMP.handle);
-	//DeleteSoundMem(BGM_FAIL.handle);
+	DeleteSoundMem(BGM_COMP.handle);
+	DeleteSoundMem(BGM_FAIL.handle);
 
 	return;
 }
