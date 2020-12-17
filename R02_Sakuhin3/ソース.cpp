@@ -711,7 +711,7 @@ VOID MY_PLAY_PROC(VOID)
 	}
 
 
-	if (MY_KEY_DOWN(KEY_INPUT_UP) || MY_KEY_DOWN(KEY_INPUT_W))
+	if (MY_KEY_DOWN(KEY_INPUT_W))
 	{
 		player.CenterY -= CHARA_SPEED_MIDI;
 		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
@@ -723,7 +723,7 @@ VOID MY_PLAY_PROC(VOID)
 			player.CenterY += CHARA_SPEED_MIDI;
 		}
 	}
-	if (MY_KEY_DOWN(KEY_INPUT_DOWN) || MY_KEY_DOWN(KEY_INPUT_S))
+	if (MY_KEY_DOWN(KEY_INPUT_S))
 	{
 		player.CenterY += CHARA_SPEED_MIDI;
 		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
@@ -735,7 +735,7 @@ VOID MY_PLAY_PROC(VOID)
 			player.CenterY -= CHARA_SPEED_MIDI;
 		}
 	}
-	if (MY_KEY_DOWN(KEY_INPUT_RIGHT) || MY_KEY_DOWN(KEY_INPUT_D))
+	if (MY_KEY_DOWN(KEY_INPUT_D))
 	{
 		player.CenterX += CHARA_SPEED_MIDI;
 		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
@@ -747,7 +747,7 @@ VOID MY_PLAY_PROC(VOID)
 			player.CenterX -= CHARA_SPEED_MIDI;
 		}
 	}
-	if (MY_KEY_DOWN(KEY_INPUT_LEFT) || MY_KEY_DOWN(KEY_INPUT_A))
+	if (MY_KEY_DOWN(KEY_INPUT_A))
 	{
 		player.CenterX -= CHARA_SPEED_MIDI;
 		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
@@ -911,6 +911,45 @@ VOID MY_PLAY_DRAW(VOID)
 			DrawGraph(enemy[i].image.x, enemy[i].image.y, enemy[i].image.handle, TRUE);
 		}
 	}
+
+	//if (player.CenterX < GAME_WIDTH /2 )
+//{
+//	if (player.CenterY < GAME_HEIGHT / 2)
+//	{
+
+//	}
+//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
+//	{
+//	}
+//	else
+//	{
+//	}
+//}
+//if (player.CenterX > (GAME_MAP_YOKO_MAX * mapChip.width) - GAME_WIDTH / 2)
+//{
+//	if (player.CenterY < GAME_HEIGHT / 2)
+//	{
+//	}
+//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
+//	{
+//	}
+//	else
+//	{
+//	}
+//}
+//else
+//{
+//	if (player.CenterY < GAME_HEIGHT / 2)
+//	{
+//	}
+//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
+//	{
+//	}
+//	else
+//	{
+//	}
+//}
+
 
 	return;
 }
