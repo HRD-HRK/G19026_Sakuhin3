@@ -1332,9 +1332,9 @@ VOID MY_DELETE_MUSIC(VOID)
 
 BOOL MY_CHECK_MAP1_PLAYER_COLL(RECT player)
 {
-	for (int tate = 0; tate <= GAME_MAP_TATE_MAX; tate++)
+	for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko <= GAME_MAP_YOKO_MAX; yoko++)
+		for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 		{
 			if (MY_CHECK_RECT_COLL(player, mapColl[tate][yoko]) == TRUE)
 			{
