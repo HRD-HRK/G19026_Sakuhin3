@@ -50,6 +50,14 @@
 #define IMAGE_BACK_REV_PATH    TEXT(".\\IMAGE\\toshi.png")
 #define IMAGE_BACK_NUM         4
 
+#define ITEM_ERR_TITLE TEXT("アイテム位置エラー")
+#define ITEM_ERR_CAPTION TEXT("アイテム位置が決まってません")
+#define ITEM_GET_TITLE TEXT("アイテム獲得")
+#define ITEM_GET_CAPTION TEXT("アイテム獲得しました")
+#define ITEM_MISS_TITLE TEXT("アイテムなし")
+#define ITEM_MISS_CAPTION TEXT("仲間を見つけて来てください。")
+
+
 #define MUSIC_LOAD_ERR_TITLE   TEXT("音楽読み込みエラー")
 
 #define MUSIC_BGM_PATH         TEXT(".\\MUSIC\\逃走.mp3")
@@ -83,6 +91,9 @@
 #define ESCAPE_CLICK_TITLE    TEXT("ゲーム中断")
 #define ESCAPE_CLICK_CAPTION  TEXT("ゲームを中断し、タイトル画面に戻りますか？")
 
+int GAME_COUNT = 0;
+int TimeLim = 0, TimeCou = 0;
+#define GAME_TIME_LIMT  10;
 
 enum GAME_MAP_KIND
 {
@@ -92,7 +103,8 @@ enum GAME_MAP_KIND
 	s = 16,
 	g = 15,
 	k = 13,
-	e = 14
+	e = 14,
+	i = 17
 };
 
 enum GAME_SCENE {
@@ -234,6 +246,8 @@ int GameScene;
 int GameEndkind;
 RECT GoalRect = { -1,-1,-1,-1 };
 
+RECT ItemRect = { -1,-1,-1,-1 };
+
 //IMAGE ImageBack;
 
 IMAGE_BACK ImageBack[IMAGE_BACK_NUM];
@@ -261,11 +275,11 @@ MUSIC BGM_FAIL;
 GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
 	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,
 	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,
-	k,t,t,t,t,t,k,t,t,t,e,t,t,t,k,
+	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,
 	k,t,t,t,t,t,k,t,t,k,t,t,t,t,k,
 	k,t,k,k,k,k,k,t,k,t,k,k,t,t,k,
-	k,t,t,t,e,t,k,t,k,t,t,t,t,t,k,
-	k,t,t,e,t,t,t,t,t,t,t,t,e,t,k,
+	k,k,t,t,e,t,k,t,k,t,t,t,t,t,k,
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,
 	k,s,k,k,k,k,k,k,k,k,k,k,k,k,k
 };
 
@@ -333,6 +347,8 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 
 	SetWindowIconID(IDI_ICON1);
 
+	extern int Game_Count;
+
 	if (DxLib_Init() == -1) { return -1; }
 
 	if (MY_LOAD_IMAGE() == FALSE) { return -1; }
@@ -362,6 +378,14 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 			}
 
 			if (mapData[tate][yoko] == g)
+			{
+				GoalRect.left = mapChip.width * yoko;
+				GoalRect.top = mapChip.height * tate;
+				GoalRect.right = mapChip.width * (yoko + 1);
+				GoalRect.bottom = mapChip.height * (tate + 1);
+			}
+
+			if (mapData[tate][yoko] == i)
 			{
 				GoalRect.left = mapChip.width * yoko;
 				GoalRect.top = mapChip.height * tate;
@@ -458,14 +482,14 @@ VOID MY_FPS_UPDATE(VOID)
 
 VOID MY_FPS_DRAW(VOID)
 {
-	DrawFormatString(0, GAME_HEIGHT - 20, GetColor(255, 255, 255), "FPS:%.1f", CalcFps);
+	DrawFormatString(GAME_WIDTH - 70, 0, GetColor(255, 255, 255), "FPS:%.1f", CalcFps);
 	return;
 }
 
 VOID MY_FPS_WAIT(VOID)
 {
 	int resultTime = GetNowCount() - StartTimeFps;
-	int waitTime = CountFps * 1000 / GAME_FPS - resultTime;
+	int waitTime = CountFps / GAME_FPS - resultTime;
 
 	if (waitTime > 0)
 	{
@@ -596,6 +620,8 @@ VOID MY_START_PROC(VOID)
 
 	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
 	{
+		TimeCou = 0;
+		TimeLim = 0;
 
 		if (CheckSoundMem(BGM.handle2) != 0)
 		{
@@ -674,8 +700,14 @@ VOID MY_PLAY(VOID)
 	MY_PLAY_DRAW();
 }
 
+static bool Get = true;		//ITEM獲得判定
+static bool Miss = true;		//ITEM獲得MISS（いらなかったかも）
+static bool IsKey = false;		//ITEM保持判定
+
 VOID MY_PLAY_PROC(VOID)
 {
+	TimeCou++;
+	TimeLim = GAME_TIME_LIMT - TimeCou / GAME_FPS; //Timer関係
 
 	if (CheckSoundMem(BGM.handle) == 0)
 	{
@@ -783,6 +815,39 @@ VOID MY_PLAY_PROC(VOID)
 	PlayerRect.right = player.image.x + player.image.width / 2 + CollRange;
 	PlayerRect.bottom = player.image.y + player.image.height / 2 + CollRange;
 
+	if (Get) {
+		if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE) {
+			MessageBox(GetMainWindowHandle(), ITEM_GET_CAPTION,ITEM_GET_TITLE,MB_OK);
+			IsKey = true;		//アイテム獲得状態
+			Get = false;		//アイテムの判定を消す
+
+		}
+	}
+
+	if (MY_CHECK_RECT_COLL(PlayerRect, ItemRect) == TRUE) {
+		if (IsKey) {
+			IsKey = false;	//アイテム獲得をしていない状態に
+			Get = true;		//アイテムの判定を戻す
+			Miss = true;		//アイテムを持っていない状態の時の処理判定
+
+			if (CheckSoundMem(BGM.handle) != 0) {
+				StopSoundMem(BGM.handle);
+			}
+
+			GameEndkind = GAME_END_COMP;
+			GameScene = GAME_SCENE_END;
+
+			return;
+		}
+
+		else {
+			if (Miss) {	//メッセージが永遠と出力されるバグ修正
+				MessageBox(GetMainWindowHandle(), ITEM_MISS_CAPTION, ITEM_MISS_TITLE, MB_OK);
+				Miss = false;
+			}
+		}
+	}
+
 	if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE)
 	{
 		if (CheckSoundMem(BGM.handle) != 0)
@@ -823,7 +888,7 @@ VOID MY_PLAY_PROC(VOID)
 				enemy[i].collBeforePt.y = enemy[i].CenterY;
 			}
 
-			if (MY_CHECK_RECT_COLL(PlayerRect, enemy[i].coll) == TRUE)
+			if (MY_CHECK_RECT_COLL(PlayerRect, enemy[i].coll) == TRUE  || TimeLim <= 0)
 			{
 				if (CheckSoundMem(BGM.handle) != 0)
 				{
@@ -899,11 +964,55 @@ VOID MY_PLAY_DRAW(VOID)
 				map[tate][yoko].y,
 				mapChip.handle[map[tate][yoko].kind],
 				TRUE);
+
+			switch (map[tate][yoko].kind)
+			{
+			case k:
+				DrawBox(
+					mapColl[tate][yoko].left,
+					mapColl[tate][yoko].top,
+					mapColl[tate][yoko].right,
+					mapColl[tate][yoko].bottom,
+					GetColor(255, 0, 0),
+					false
+				);
+				break;
+
+
+			}
+
+			//for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
+			//{
+			//	for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
+			//	{
+			//		//壁ならば
+			//		if (mapData[tate][yoko] == k)
+			//		{
+			//			DrawBox(mapColl[tate][yoko].left, mapColl[tate][yoko].top, mapColl[tate][yoko].right, mapColl[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
+			//		}
+
+			//		//通路ならば
+			//		if (mapData[tate][yoko] == t)
+			//		{
+			//			DrawBox(mapColl[tate][yoko].left, mapColl[tate][yoko].top, mapColl[tate][yoko].right, mapColl[tate][yoko].bottom, GetColor(255, 255, 0), FALSE);
+			//		}
+			//	}
+			//}
+
 		}
 
 	}
 
 	DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
+
+	DrawBox(
+		player.coll.left,
+		player.coll.top,
+		player.coll.right,
+		player.coll.bottom,
+		GetColor(0, 255, 0),
+		false
+	);
 
 	for (int i = 0; i < enemyCnt; i++)
 	{
