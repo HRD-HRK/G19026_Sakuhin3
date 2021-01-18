@@ -52,9 +52,9 @@
 
 #define ITEM_ERR_TITLE TEXT("アイテム位置エラー")
 #define ITEM_ERR_CAPTION TEXT("アイテム位置が決まってません")
-#define ITEM_GET_TITLE TEXT("アイテム獲得")
-#define ITEM_GET_CAPTION TEXT("アイテム獲得しました")
-#define ITEM_MISS_TITLE TEXT("アイテムなし")
+#define ITEM_GET_TITLE TEXT("仲間を発見")
+#define ITEM_GET_CAPTION TEXT("仲間を見つけました")
+#define ITEM_MISS_TITLE TEXT("仲間がいません")
 #define ITEM_MISS_CAPTION TEXT("仲間を見つけて来てください。")
 
 
@@ -273,14 +273,15 @@ MUSIC BGM_FAIL;
 
 
 GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
-	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,
-	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,
-	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,
-	k,t,t,t,t,t,k,t,t,k,t,t,t,t,k,
-	k,t,k,k,k,k,k,t,k,t,k,k,t,t,k,
-	k,k,t,t,e,t,k,t,k,t,t,t,t,t,k,
-	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,
-	k,s,k,k,k,k,k,k,k,k,k,k,k,k,k
+//  0 1 2 3 4 5 6 7 8 9 0 2 3 4 5
+	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,    // 0
+	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 1
+	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,    // 2
+	k,t,t,t,t,t,k,t,t,k,t,t,t,t,k,    // 3
+	k,t,k,k,k,k,k,t,k,t,k,k,t,t,k,    // 4
+	k,k,t,t,e,t,k,t,k,t,t,t,t,t,k,    // 5
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,    // 6 
+	k,s,k,k,k,k,k,k,k,k,k,k,k,k,k     // 7
 };
 
 GAME_MAP_KIND mapDataInit[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX];
@@ -387,10 +388,10 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 
 			if (mapData[tate][yoko] == i)
 			{
-				GoalRect.left = mapChip.width * yoko;
-				GoalRect.top = mapChip.height * tate;
-				GoalRect.right = mapChip.width * (yoko + 1);
-				GoalRect.bottom = mapChip.height * (tate + 1);
+				ItemRect.left = mapChip.width * yoko;
+				ItemRect.top = mapChip.height * tate;
+				ItemRect.right = mapChip.width * (yoko + 1);
+				ItemRect.bottom = mapChip.height * (tate + 1);
 			}
 
 			if (mapData[tate][yoko] == e && enemyCnt < ENEMY_MAX)
@@ -620,8 +621,6 @@ VOID MY_START_PROC(VOID)
 
 	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
 	{
-		TimeCou = 0;
-		TimeLim = 0;
 
 		if (CheckSoundMem(BGM.handle2) != 0)
 		{
@@ -816,15 +815,16 @@ VOID MY_PLAY_PROC(VOID)
 	PlayerRect.bottom = player.image.y + player.image.height / 2 + CollRange;
 
 	if (Get) {
-		if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE) {
-			MessageBox(GetMainWindowHandle(), ITEM_GET_CAPTION,ITEM_GET_TITLE,MB_OK);
+		if (MY_CHECK_RECT_COLL(PlayerRect, ItemRect) == TRUE) {
+			MessageBox(GetMainWindowHandle(), ITEM_GET_CAPTION, ITEM_GET_TITLE, MB_OK);
 			IsKey = true;		//アイテム獲得状態
 			Get = false;		//アイテムの判定を消す
 
 		}
 	}
 
-	if (MY_CHECK_RECT_COLL(PlayerRect, ItemRect) == TRUE) {
+	if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE)
+	{
 		if (IsKey) {
 			IsKey = false;	//アイテム獲得をしていない状態に
 			Get = true;		//アイテムの判定を戻す
@@ -846,22 +846,6 @@ VOID MY_PLAY_PROC(VOID)
 				Miss = false;
 			}
 		}
-	}
-
-	if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE)
-	{
-		if (CheckSoundMem(BGM.handle) != 0)
-		{
-			StopSoundMem(BGM.handle);
-		}
-
-		SetMouseDispFlag(TRUE);
-
-		GameEndkind = GAME_END_COMP;
-
-		GameScene = GAME_SCENE_END;
-
-		return;
 	}
 
 	for (int i = 0; i < enemyCnt; i++)
@@ -1021,11 +1005,11 @@ VOID MY_PLAY_DRAW(VOID)
 		}
 	}
 
-	//if (player.CenterX < GAME_WIDTH /2 )
+//	if (player.CenterX < GAME_WIDTH /2 )
 //{
 //	if (player.CenterY < GAME_HEIGHT / 2)
 //	{
-
+//
 //	}
 //	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
 //	{
