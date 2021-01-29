@@ -275,25 +275,25 @@ MUSIC BGM_FAIL;
 GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
 //  0                    1                 2                   3                   4
 //  0 1 2 3 4 5 6 7 8 9 0 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 
-	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,    // 0
+	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 0
 	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 1
-	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,    // 2
-	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 3
+	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,    // 2
+	k,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 3
 	k,t,k,k,k,k,s,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 4
-	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 5
+	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,t,t,t,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 5
 	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 6 
 	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 7
-	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,    // 8
+	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 8
 	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 9
-	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,    // 10
+	k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,    // 10
 	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 1
 	k,t,k,k,k,k,t,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 2
 	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 3
 	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 4 
 	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 5
-	k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,g,k,k,k,k,    // 6
+	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 6
 	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 7
-	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,    // 8
+	k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,    // 8
 	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 9
 	k,t,k,k,k,k,t,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 20
 	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 1
@@ -789,8 +789,6 @@ VOID MY_PLAY_PROC(VOID)
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
 						map[tate][yoko].y += player.speed;
-						map[tate][yoko].y += player.speed;
-						map[tate][yoko].y += player.speed;
 
 						////当たり判定も移動
 						//map[tate][yoko].coll.left += player.speed;
@@ -811,8 +809,6 @@ VOID MY_PLAY_PROC(VOID)
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
 						map[tate][yoko].y -= player.speed;
-						map[tate][yoko].y -= player.speed;
-						map[tate][yoko].y -= player.speed;
 
 						////当たり判定も移動
 						//map[tate][yoko].coll.left += player.speed;
@@ -831,8 +827,6 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
-						map[tate][yoko].x += player.speed;
-						map[tate][yoko].x += player.speed;
 						map[tate][yoko].x += player.speed;
 
 						////当たり判定も移動
@@ -854,8 +848,6 @@ VOID MY_PLAY_PROC(VOID)
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
 						map[tate][yoko].x -= player.speed;
-						map[tate][yoko].x -= player.speed;
-						map[tate][yoko].x -= player.speed;
 
 						////当たり判定も移動
 						//map2_naka[tate][yoko].coll.left -= player.speed;
@@ -875,55 +867,58 @@ VOID MY_PLAY_PROC(VOID)
 	//if (mapYokoLoopStart < 0) { mapYokoLoopStart = 0; mapYokoLoopEnd = GAME_YOKO_CENTER * 2; }
 	//if (mapYokoLoopEnd > MAP2_YOKO_MAX) { mapYokoLoopStart = MAP2_YOKO_MAX - GAME_YOKO_CENTER * 2; mapYokoLoopEnd = MAP2_YOKO_MAX + 1; }
 
-
-	//if (MY_KEY_DOWN(KEY_INPUT_W))
-	//{
-	//	player.CenterY -= CHARA_SPEED_MIDI;
-	//	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
-	//	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
-	//	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
-	//	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
-	//	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	//	{
-	//		player.CenterY += CHARA_SPEED_MIDI;
-	//	}
-	//}
-	//if (MY_KEY_DOWN(KEY_INPUT_S))
-	//{
-	//	player.CenterY += CHARA_SPEED_MIDI;
-	//	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
-	//	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
-	//	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
-	//	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
-	//	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	//	{
-	//		player.CenterY -= CHARA_SPEED_MIDI;
-	//	}
-	//}
-	//if (MY_KEY_DOWN(KEY_INPUT_D))
-	//{
-	//	player.CenterX += CHARA_SPEED_MIDI;
-	//	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
-	//	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
-	//	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
-	//	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
-	//	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	//	{
-	//		player.CenterX -= CHARA_SPEED_MIDI;
-	//	}
-	//}
-	//if (MY_KEY_DOWN(KEY_INPUT_A))
-	//{
-	//	player.CenterX -= CHARA_SPEED_MIDI;
-	//	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
-	//	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
-	//	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
-	//	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
-	//	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	//	{
-	//		player.CenterX += CHARA_SPEED_MIDI;
-	//	}
-	//}
+	//プレイヤーの上移動
+	if (MY_KEY_DOWN(KEY_INPUT_W))
+	{
+		player.CenterY -= CHARA_SPEED_MIDI;
+		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
+		player.coll.top = player.CenterY - mapChip.height / 2 + 5;
+		player.coll.right = player.CenterX + mapChip.width / 2 - 5;
+		player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
+		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{
+			player.CenterY += CHARA_SPEED_MIDI;
+		}
+	}
+	//プレイヤーの下移動
+	if (MY_KEY_DOWN(KEY_INPUT_S))
+	{
+		player.CenterY += CHARA_SPEED_MIDI;
+		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
+		player.coll.top = player.CenterY - mapChip.height / 2 + 5;
+		player.coll.right = player.CenterX + mapChip.width / 2 - 5;
+		player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
+		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{
+			player.CenterY -= CHARA_SPEED_MIDI;
+		}
+	}
+	//プレイヤーの右移動
+	if (MY_KEY_DOWN(KEY_INPUT_D))
+	{
+		player.CenterX += CHARA_SPEED_MIDI;
+		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
+		player.coll.top = player.CenterY - mapChip.height / 2 + 5;
+		player.coll.right = player.CenterX + mapChip.width / 2 - 5;
+		player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
+		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{
+			player.CenterX -= CHARA_SPEED_MIDI;
+		}
+	}
+	//プレイヤーの左移動
+	if (MY_KEY_DOWN(KEY_INPUT_A))
+	{
+		player.CenterX -= CHARA_SPEED_MIDI;
+		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
+		player.coll.top = player.CenterY - mapChip.height / 2 + 5;
+		player.coll.right = player.CenterX + mapChip.width / 2 - 5;
+		player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
+		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{
+			player.CenterX += CHARA_SPEED_MIDI;
+		}
+	}
 
 	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
