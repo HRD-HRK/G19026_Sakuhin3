@@ -129,6 +129,8 @@ typedef struct STRUCT_1_POINT
 {
 	int x = -1;
 	int y = -1;
+
+	int randmap;
 }iPOINT;
 
 
@@ -313,7 +315,7 @@ MAP map[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX];
 
 iPOINT startPt{ -1,-1 };
 
-iPOINT map[9][2][2] =
+iPOINT randmap[9][2][2] =
 {
 	{{{6,7},{6,8}},{{3,5},{3,6}}},             //ç∂è„
 	{{{6,15},{6,16}},{{11,5},{11,6}}},         //ç∂íÜ
