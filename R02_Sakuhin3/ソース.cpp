@@ -4,7 +4,7 @@
 
 #define GAME_WIDTH  960
 
-#define GAME_HEIGHT 510
+#define GAME_HEIGHT 550
 
 #define GAME_COLOR  32 
 
@@ -31,7 +31,7 @@
 #define IMAGE_BACK_PATH        TEXT(".\\IMAGE\\toshi.png")
 #define IMAGE_PLAYER_PATH      TEXT(".\\IMAGE\\syujin.png")
 
-#define IMAGE_ENEMY_PATH       TEXT(".\\IMAGE\\police.png")
+//#define IMAGE_ENEMY_PATH       TEXT(".\\IMAGE\\police.png")
 
 #define IMAGE_TITLE_BK_PATH       TEXT(".\\IMAGE\\kangoku.jpg")
 #define IMAGE_TITLE_ROGO_PATH     TEXT(".\\IMAGE\\title.png")
@@ -68,7 +68,11 @@
 #define MUSIC_BGM_COMP_PATH         TEXT(".\\MUSIC\\famipop3.mp3")
 #define MUSIC_BGM_FAIL_PATH         TEXT(".\\MUSIC\\牢獄.mp3")
 
-#define ENEMY_MAX              18
+//#define ENEMY_MAX              20
+
+#define GOAL_MAX               5
+
+#define ITEM_MAX               5
 
 #define GAME_MAP_TATE_MAX      24
 #define GAME_MAP_YOKO_MAX      45
@@ -91,9 +95,9 @@
 #define ESCAPE_CLICK_TITLE    TEXT("ゲーム中断")
 #define ESCAPE_CLICK_CAPTION  TEXT("ゲームを中断し、タイトル画面に戻りますか？")
 
-//int GAME_COUNT = 0;
-//int TimeLim = 0, TimeCou = 0;
-//#define GAME_TIME_LIMT  10;
+//制限時間
+int TimeCou = 0;
+#define GAME_TIME_LIMT  10
 
 enum GAME_MAP_KIND
 {
@@ -130,7 +134,6 @@ typedef struct STRUCT_1_POINT
 	int x = -1;
 	int y = -1;
 
-	int randmap;
 }iPOINT;
 
 
@@ -177,20 +180,20 @@ typedef struct STRUCT_CHARA
 
 }CHARA;
 
-typedef struct STRUCT_ENEMY
-{
-	IMAGE image;
-	int speed;
-	int CenterX;
-	int CenterY;
-	int Moveadd;
-
-	bool view = FALSE;
-
-	RECT coll;
-	iPOINT collBeforePt;
-
-}ENEMY;
+//typedef struct STRUCT_ENEMY
+//{
+//	IMAGE image;
+//	int speed;
+//	int CenterX;
+//	int CenterY;
+//	int Moveadd;
+//
+//	bool view = FALSE;
+//
+//	RECT coll;
+//	iPOINT collBeforePt;
+//
+//}ENEMY;
 
 typedef struct STRUCT_IMAGE_BACK
 {
@@ -250,9 +253,13 @@ FONT MS;
 int GameScene;
 
 int GameEndkind;
-RECT GoalRect = { -1,-1,-1,-1 };
 
-RECT ItemRect = { -1,-1,-1,-1 };
+RECT GoalRect[GOAL_MAX] = { -1,-1,-1,-1 };
+int GoalCnt = 0;
+
+RECT ItemRect[ITEM_MAX] = { -1,-1,-1,-1 };
+int ItemCnt = 0;
+
 
 //IMAGE ImageBack;
 
@@ -267,10 +274,6 @@ IMAGE_BLINK ImageEndFAIL;
 
 CHARA player;
 
-ENEMY enemy[ENEMY_MAX];
-iPOINT enemyPt[ENEMY_MAX] = { {-1,-1} };
-int enemyCnt = 0;
-
 MUSIC BGM;
 
 MUSIC BGM_TITLE;
@@ -279,31 +282,31 @@ MUSIC BGM_FAIL;
 
 
 GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
-//  0                    1                 2                  3                   4
+//  0                   1                 2                   3                   4
 //  0 1 2 3 4 5 6 7 8 9 0 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 
-	k,k,k,k,k,k,k,k,k,t,k,g,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 0
-	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 1
-	k,t,t,t,t,t,k,t,t,t,i,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,    // 2
+	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,    // 0
+	k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,    // 1
+	k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,    // 2
 	k,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 3
-	k,t,k,k,k,k,s,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 4
+	k,t,k,t,k,k,s,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 4
 	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 5
-	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 6 
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,    // 6 
 	k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 7
-	k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 8
-	k,t,t,t,t,t,t,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 9
+	k,k,t,k,k,k,t,t,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 8
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,    // 9
 	k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,    // 10
-	k,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 1
-	k,t,k,k,k,k,t,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 2
-	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 3
-	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 4 
-	k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 5
+	k,t,t,t,t,t,k,k,k,t,t,t,t,t,t,t,t,t,k,t,t,k,k,k,t,t,t,t,t,t,t,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 1
+	k,t,k,k,k,k,t,t,t,t,k,k,t,t,k,k,t,k,k,t,k,k,t,t,t,k,k,t,t,k,k,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 2
+	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 3
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,    // 4 
+	k,k,k,t,k,k,t,k,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 5
 	k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,t,k,k,k,k,k,k,k,k,k,k,    // 6
-	k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,k,t,t,t,t,t,k,t,t,t,t,t,t,e,k,    // 7
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,k,t,t,t,t,t,k,t,t,t,t,t,t,t,k,    // 7
 	k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,k,t,t,t,t,t,k,t,t,t,k,t,t,t,k,    // 8
-	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 9
-	k,t,k,k,k,k,t,t,t,t,k,k,t,t,t,t,t,k,k,k,k,k,t,t,t,k,k,t,t,t,t,t,k,k,k,k,k,t,t,t,k,k,t,t,k,    // 20
-	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 1
-	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 2 
+	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,k,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 9
+	k,t,k,k,k,k,t,t,t,t,k,k,t,t,t,t,t,k,t,k,k,k,t,t,t,k,k,t,t,t,t,t,t,k,k,k,k,t,t,t,k,k,t,t,k,    // 20
+	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 1
+	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,t,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 2 
 	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k     // 3
 };
 
@@ -315,18 +318,37 @@ MAP map[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX];
 
 iPOINT startPt{ -1,-1 };
 
-iPOINT randmap[9][2][2] =
+iPOINT randmap[5][2][2] =
 {
-	{{{6,7},{6,8}},{{3,5},{3,6}}},             //左上
-	{{{6,15},{6,16}},{{11,5},{11,6}}},         //左中
-	{{{6,15},{6,16}},{{20,5},{20,6}}},         //左下
-	{{{15,7},{15,8}},{{3,30},{3,31}}},         //中上
-	{{{15,15},{15,16}},{{11,30},{11,31}}},     //中中
-	{{{15,15},{15,16}},{{20,30},{20,31}}},     //中下
-	{{{34,7},{34,8}},{{3,30},{3,31}}},         //右上
-	{{{34,15},{34,16}},{{11,5},{11,6}}},       //右中
-	{{{34,15},{34,16}},{{20,30},{20,30}}}      //右下
+	//{{{6,7},{6,8}},{{15,3},{16,3}}},             //左上
+	{{{6,15},{6,16}},{{15,11},{16,11}}},         //左中
+	//{{{6,15},{6,16}},{{15,20},{16,20}}},         //左下
+	{{{25,7},{25,8}},{{30,3},{31,3}}},         //中上
+	{{{25,15},{25,16}},{{30,11},{31,11}}},     //中中
+	{{{25,15},{25,16}},{{30,20},{31,20}}},     //中下
+	//{{{35,7},{35,8}},{{30,3},{31,33}}},         //右上
+	{{{35,15},{35,16}},{{30,11},{31,11}}},       //右中
+	//{{{35,15},{35,16}},{{30,20},{31,20}}}      //右下
 };
+
+iPOINT randgoal[5] =
+{
+	{42,0},
+	{45,11},
+	{1,23},
+	{27,23},
+	{44,23}
+};
+
+iPOINT randitem[5] =
+{
+	{1,4},
+	{1,22},
+	{21,11},
+	{32,18},
+	{39,4}
+};
+
 
 RECT mapColl[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX];
 
@@ -366,26 +388,6 @@ BOOL MY_CHECK_MAP1_PLAYER_COLL(RECT player);
 BOOL MY_CHECK_RECT_COLL(RECT, RECT);
 
 extern BOOL IsMapMove = TRUE;
-//extern int mapYokoKijun;
-//extern int mapYokoLoopStart;
-//extern int mapYokoLoopEnd;
-//
-//
-//extern int mapTateKijun;
-//extern int mapTateLoopStart;
-//extern int mapTateLoopEnd;
-//
-//extern BOOL IsStopMapLeft;
-//extern BOOL IsStopMapRight;
-//
-//extern BOOL IsStopMapTop;
-//extern BOOL IsStopMapBottom;
-//
-//BOOL IsStopMapTop;
-//BOOL IsStopMapBottom;
-//
-//BOOL IsStopMapLeft;
-//BOOL IsStopMapRight;
 
 int spHandle;
 int spX;
@@ -423,6 +425,38 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 
 	SetDrawScreen(DX_SCREEN_BACK);
 
+	//通路を乱数生成
+	for (int room = 0; room < 5; room++)  //部屋数
+	{
+		for (int way = 0; way < 2; way++)  //方向数
+		{
+			int randway = GetRand(1);  //乱数０か１か
+			if (randway == 1)  //１ならば壁を作る
+			{
+				iPOINT work1 = randmap[room][way][0];
+				iPOINT work2 = randmap[room][way][1];
+				mapData[work1.y][work1.x] = k;         //通路１個目
+				mapData[work2.y][work2.x] = k;         //通路２個目
+				map[work1.y][work1.x].kind = k;
+				map[work2.y][work2.x].kind = k;
+				break;  //全て閉じれれて積むことを防ぐため（どちらか一方はあくようにする）
+			}
+		}
+	}
+
+	//ゴールのランダム生成
+	int goalnum = GetRand(4);  //ゴールの数
+
+	iPOINT goal = randgoal[goalnum];
+	mapData[goal.y][goal.x] = g;
+	map[goal.y][goal.x].kind = g;
+
+	//アイテムのランダム生成
+	int Itemnum = GetRand(4);  //ゴールの数
+
+	iPOINT item = randitem[Itemnum];
+	mapData[item.y][item.x] = i;
+	map[item.y][item.x].kind = i;
 
 	for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
 	{
@@ -437,32 +471,34 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 			}
 
 			//ゴールの当たり判定
-			if (mapData[tate][yoko] == g)
+			if (mapData[tate][yoko] == g && GoalCnt < GOAL_MAX)
 			{
-				GoalRect.left = mapChip.width * yoko;
-				GoalRect.top = mapChip.height * tate;
-				GoalRect.right = mapChip.width * (yoko + 1);
-				GoalRect.bottom = mapChip.height * (tate + 1);
+				GoalRect[GoalCnt].left = mapChip.width * yoko;
+				GoalRect[GoalCnt].top = mapChip.height * tate;
+				GoalRect[GoalCnt].right = mapChip.width * (yoko + 1);
+				GoalRect[GoalCnt].bottom = mapChip.height * (tate + 1);
+				GoalCnt++;
 			}
 
 			//アイテムの当たり判定
-			if (mapData[tate][yoko] == i)
+			if (mapData[tate][yoko] == i && ItemCnt < ITEM_MAX)
 			{
-				ItemRect.left = mapChip.width * yoko;
-				ItemRect.top = mapChip.height * tate;
-				ItemRect.right = mapChip.width * (yoko + 1);
-				ItemRect.bottom = mapChip.height * (tate + 1);
+				ItemRect[ItemCnt].left = mapChip.width * yoko;
+				ItemRect[ItemCnt].top = mapChip.height * tate;
+				ItemRect[ItemCnt].right = mapChip.width * (yoko + 1);
+				ItemRect[ItemCnt].bottom = mapChip.height * (tate + 1);
+				ItemCnt++;
 			}
 
-			//敵の当たり判定
-			if (mapData[tate][yoko] == e && enemyCnt < ENEMY_MAX)
-			{
-				enemyPt[enemyCnt].x = mapChip.width * yoko + mapChip.width / 2;
-				enemyPt[enemyCnt].y = mapChip.height * tate + mapChip.height / 2;
-				enemy[enemyCnt].view = TRUE;
-				enemyCnt++;
-				map[tate][yoko].kind = t;
-			}
+			////敵の当たり判定
+			//if (mapData[tate][yoko] == e && enemyCnt < ENEMY_MAX)
+			//{
+			//	enemyPt[enemyCnt].x = mapChip.width * yoko  + mapChip.width / 2;
+			//	enemyPt[enemyCnt].y = mapChip.height * tate + mapChip.height / 2;
+			//	enemy[enemyCnt].view = TRUE;
+			//	enemyCnt++;
+			//	map[tate][yoko].kind = t;  //マップ上では通路を表してる
+			//}
 		}
 	}
 
@@ -472,7 +508,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 		return -1;
 	}
 
-	if (GoalRect.left == -1)
+	if (GoalRect[GoalCnt].left == -1)
 	{
 		MessageBox(GetMainWindowHandle(), GOAL_ERR_CAPTION, GOAL_ERR_TITLE, MB_OK);
 		return -1;
@@ -501,7 +537,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 			MY_END();
 			break;
 		}
-
+		 
 		MY_FPS_DRAW();
 
 		ScreenFlip();
@@ -537,6 +573,10 @@ VOID MY_FPS_UPDATE(VOID)
 		CountFps = 0;
 		StartTimeFps = now;
 	}
+
+	//制限時間のカウント進める
+	TimeCou++;
+
 	CountFps++;
 	return;
 }
@@ -701,23 +741,9 @@ VOID MY_START_PROC(VOID)
 		player.collBeforePt.x = player.CenterX;
 		player.collBeforePt.y = player.CenterY;
 
-		for (int i = 0; i < enemyCnt; i++)
-		{
-			enemy[i].Moveadd = 1;
+		//制限時間の初期化
+		TimeCou = 0;
 
-			enemy[i].view = TRUE;
-
-			enemy[i].CenterX = enemyPt[i].x;
-			enemy[i].CenterY = enemyPt[i].y;
-
-			enemy[i].image.x = enemy[i].CenterX;
-			enemy[i].image.y = enemy[i].CenterY;
-
-			enemy[i].coll.left = enemy[i].CenterX - enemy[i].image.width / 2 + 20;
-			enemy[i].coll.top = enemy[i].CenterY - enemy[i].image.height / 2 + 20;
-			enemy[i].coll.right = enemy[i].CenterX + enemy[i].image.width / 2 - 20;
-			enemy[i].coll.bottom = enemy[i].CenterY + enemy[i].image.height / 2 - 20;
-		}
 
 		GameEndkind = GAME_END_FAIL;
 
@@ -771,9 +797,6 @@ static bool IsKey = false;		//ITEM保持判定
 
 VOID MY_PLAY_PROC(VOID)
 {
-	//TimeCou++;
-	//TimeLim = GAME_TIME_LIMT - TimeCou / GAME_FPS; //Timer関係
-
 	if (CheckSoundMem(BGM.handle) == 0)
 	{
 		ChangeVolumeSoundMem(255 * 30 / 100, BGM.handle);
@@ -811,155 +834,6 @@ VOID MY_PLAY_PROC(VOID)
 	//マップを動かすとき
 	if (IsMapMove == TRUE)
 	{
-		////上へ行くとき
-		//if (MY_KEY_DOWN(KEY_INPUT_W) == TRUE)
-		//{
-		//	//マップが動かせるときは
-		//	if (IsStopMapTop == FALSE)
-		//	{
-		//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//		{
-		//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//			{
-		//				map[tate][yoko].y += player.speed;
-
-		//				////当たり判定も移動
-		//				map[tate][yoko].coll.left += player.speed;
-		//				map[tate][yoko].coll.right += player.speed;
-		//			}
-		//		}
-		//		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-		//		{
-		//			for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//			{
-		//				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//				{
-		//					map[tate][yoko].y -= player.speed;
-
-		//					//当たり判定も移動
-		//					map[tate][yoko].coll.left -= player.speed;
-		//					map[tate][yoko].coll.right -= player.speed;
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-
-		////下へ行くとき
-		//if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
-		//{
-		//	//マップが動かせるときは
-		//	if (IsStopMapBottom == FALSE)
-		//	{
-		//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//		{
-		//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//			{
-		//				map[tate][yoko].y -= player.speed;
-
-		//				////当たり判定も移動
-		//				map[tate][yoko].coll.left += player.speed;
-		//				map[tate][yoko].coll.right += player.speed;
-		//			}
-		//		}
-		//		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-		//		{
-		//			for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//			{
-		//				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//				{
-		//					map[tate][yoko].y += player.speed;
-
-		//					//当たり判定も移動
-		//					map[tate][yoko].coll.left -= player.speed;
-		//					map[tate][yoko].coll.right -= player.speed;
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		////左へ行くとき
-		//if (MY_KEY_DOWN(KEY_INPUT_A) == TRUE)
-		//{
-		//	//マップが動かせるときは
-		//	if (IsStopMapLeft == FALSE)
-		//	{
-		//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//		{
-		//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//			{
-		//				map[tate][yoko].x += player.speed;
-
-		//				////当たり判定も移動
-		//				map[tate][yoko].coll.left += player.speed;
-		//				map[tate][yoko].coll.right += player.speed;
-		//			}
-		//		}
-
-		//		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-		//		{
-		//			for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//			{
-		//				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//				{
-		//					map[tate][yoko].x -= player.speed;
-
-		//					//当たり判定も移動
-		//					map[tate][yoko].coll.left -= player.speed;
-		//					map[tate][yoko].coll.right -= player.speed;
-		//				}
-		//			}
-
-		//		}
-		//	}
-		//}
-
-		////	//右へ行くとき
-		//if (MY_KEY_DOWN(KEY_INPUT_D) == TRUE)
-		//{
-		//	//マップが動かせるときは
-		//	if (IsStopMapRight == FALSE)
-		//	{
-		//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//		{
-		//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//			{
-		//				map[tate][yoko].x -= player.speed;
-
-		//				////当たり判定も移動
-		//				map[tate][yoko].coll.left -= player.speed;
-		//				map[tate][yoko].coll.right -= player.speed;
-		//			}
-		//		}
-		//		//↓マップ版
-		//		if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-		//		{
-		//			for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-		//			{
-		//				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-		//				{
-		//					map[tate][yoko].x += player.speed;
-
-		//					//当たり判定も移動
-		//					map[tate][yoko].coll.left += player.speed;
-		//					map[tate][yoko].coll.right += player.speed;
-		//				}
-		//			}
-
-		//		}
-
-		//	}
-		//}
-
-		////マップの中心基準点を計算
-		//mapYokoKijun = player.mapX / MAP_DIV_WIDTH;	//画面の中心マスを計算
-		//mapYokoLoopStart = mapYokoKijun - GAME_YOKO_CENTER;		//マップ横ループの開始マス
-		//mapYokoLoopEnd = mapYokoKijun + GAME_YOKO_CENTER + 1;	//マップ横ループの終了マス
-
-		////マップの端は、固定で描画する領域を設定する
-		//if (mapYokoLoopStart < 0) { mapYokoLoopStart = 0; mapYokoLoopEnd = GAME_YOKO_CENTER * 2; }
-		//if (mapYokoLoopEnd > MAP2_YOKO_MAX) { mapYokoLoopStart = MAP2_YOKO_MAX - GAME_YOKO_CENTER * 2; mapYokoLoopEnd = MAP2_YOKO_MAX + 1; }
-
 		//プレイヤーの上移動
 		if (MY_KEY_DOWN(KEY_INPUT_W))
 		{
@@ -972,10 +846,26 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 				{
-					mapColl[tate][yoko].top += player.speed;
-					mapColl[tate][yoko].bottom += player.speed;
+					mapColl[tate][yoko].top += player.speed; //マップを動かす
+					mapColl[tate][yoko].bottom += player.speed; //マップを動かす
 				}
 			}
+
+			for (int i = 0; i < GoalCnt; i++)
+			{
+			GoalRect[i].top += player.speed;  //ゴールを動かす
+			GoalRect[i].bottom += player.speed;  //ゴールを動かす
+			}
+
+			for (int i = 0; i < ItemCnt; i++)
+			{
+				ItemRect[i].top += player.speed;  //アイテムを動かす
+				ItemRect[i].bottom += player.speed;  //アイテムを動かす
+			}
+
+			//enemy[i].coll.top += player.speed; //敵キャラを動かす
+			//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
+
 
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
@@ -992,10 +882,25 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
-						mapColl[tate][yoko].top -= player.speed;
-						mapColl[tate][yoko].bottom -= player.speed;
+						mapColl[tate][yoko].top -= player.speed; //マップを動かす
+						mapColl[tate][yoko].bottom -= player.speed; //マップを動かす
+
 					}
 				}
+
+				for (int i = 0; i < GoalCnt; i++)
+				{
+					GoalRect[i].top -= player.speed;  //ゴールを動かす
+					GoalRect[i].bottom -= player.speed;  //ゴールを動かす
+				}
+
+				for (int i = 0; i < ItemCnt; i++)
+				{
+					ItemRect[i].top -= player.speed;  //アイテムを動かす
+					ItemRect[i].bottom -= player.speed;  //アイテムを動かす
+				}
+				//enemy[i].coll.top += player.speed; //敵キャラを動かす
+				//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
 			}
 			//player.CenterY = player.CenterY - player.speed;
 		}
@@ -1011,10 +916,25 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 				{
-					mapColl[tate][yoko].top -= player.speed;
-					mapColl[tate][yoko].bottom -= player.speed;
+					mapColl[tate][yoko].top -= player.speed; //マップを動かす
+					mapColl[tate][yoko].bottom -= player.speed; //マップを動かす
 				}
 			}
+
+			for (int i = 0; i < GoalCnt; i++)
+			{
+				GoalRect[i].top -= player.speed;  //ゴールを動かす
+				GoalRect[i].bottom -= player.speed;  //ゴールを動かす
+			}
+
+			for (int i = 0; i < ItemCnt; i++)
+			{
+				ItemRect[i].top -= player.speed;  //アイテムを動かす
+				ItemRect[i].bottom -= player.speed;  //アイテムを動かす
+			}
+
+			//enemy[i].coll.top -= player.speed; //敵キャラを動かす
+			//enemy[i].coll.bottom -= player.speed;  //敵キャラを動かす
 
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
@@ -1031,10 +951,26 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
-						mapColl[tate][yoko].top += player.speed;
-						mapColl[tate][yoko].bottom += player.speed;
+						mapColl[tate][yoko].top += player.speed; //マップを動かす
+						mapColl[tate][yoko].bottom += player.speed; //マップを動かす
 					}
 				}
+
+				for (int i = 0; i < GoalCnt; i++)
+				{
+					GoalRect[i].top += player.speed;  //ゴールを動かす
+					GoalRect[i].bottom += player.speed;  //ゴールを動かす
+				}
+
+				for (int i = 0; i < ItemCnt; i++)
+				{
+					ItemRect[i].top += player.speed;  //アイテムを動かす
+					ItemRect[i].bottom += player.speed;  //アイテムを動かす
+				}
+
+				//enemy[i].coll.top += player.speed; //敵キャラを動かす
+				//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
+
 			}
 			//player.CenterY = player.CenterY + player.speed;
 		}
@@ -1050,10 +986,25 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 				{
-					mapColl[tate][yoko].left -= player.speed;
-					mapColl[tate][yoko].right -= player.speed;
+					mapColl[tate][yoko].left -= player.speed; //マップを動かす
+					mapColl[tate][yoko].right -= player.speed; //マップを動かす
 				}
 			}
+
+			for (int i = 0; i < GoalCnt; i++)
+			{
+				GoalRect[i].left -= player.speed;  //ゴールを動かす
+				GoalRect[i].right -= player.speed;  //ゴールを動かす
+			}
+
+			for (int i = 0; i < ItemCnt; i++)
+			{
+				ItemRect[i].left -= player.speed;  //アイテムを動かす
+				ItemRect[i].right -= player.speed;  //アイテムを動かす
+			}
+
+			//enemy[i].coll.left -= player.speed; //敵キャラを動かす
+			//enemy[i].coll.right -= player.speed;  //敵キャラを動かす
 
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
@@ -1069,10 +1020,26 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
-						mapColl[tate][yoko].left += player.speed;
-						mapColl[tate][yoko].right += player.speed;
+						mapColl[tate][yoko].left += player.speed; //マップを動かす
+						mapColl[tate][yoko].right += player.speed; //マップを動かす
+
 					}
 				}
+
+				for (int i = 0; i < GoalCnt; i++)
+				{
+					GoalRect[i].left += player.speed;  //ゴールを動かす
+					GoalRect[i].right += player.speed;  //ゴールを動かす
+				}
+
+				for (int i = 0; i < ItemCnt; i++)
+				{
+					ItemRect[i].left += player.speed;  //アイテムを動かす
+					ItemRect[i].right += player.speed;  //アイテムを動かす
+				}
+
+				//enemy[i].coll.left += player.speed; //敵キャラを動かす
+				//enemy[i].coll.right += player.speed;  //敵キャラを動かす
 			}
 			//player.CenterX = player.CenterX + player.speed;
 		}
@@ -1087,10 +1054,26 @@ VOID MY_PLAY_PROC(VOID)
 			{
 				for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 				{
-					mapColl[tate][yoko].left += player.speed;
-					mapColl[tate][yoko].right += player.speed;
+					mapColl[tate][yoko].left += player.speed; //マップを動かす
+					mapColl[tate][yoko].right += player.speed; //マップを動かす
+
 				}
 			}
+
+			for (int i = 0; i < GoalCnt; i++)
+			{
+				GoalRect[i].left += player.speed;  //ゴールを動かす
+				GoalRect[i].right += player.speed;  //ゴールを動かす
+			}
+
+			for (int i = 0; i < ItemCnt; i++)
+			{
+				ItemRect[i].left += player.speed;  //アイテムを動かす
+				ItemRect[i].right += player.speed;  //アイテムを動かす
+			}
+
+			//enemy[i].coll.left += player.speed; //敵キャラを動かす
+			//enemy[i].coll.right += player.speed;  //敵キャラを動かす
 
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
@@ -1106,12 +1089,26 @@ VOID MY_PLAY_PROC(VOID)
 				{
 					for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
 					{
-						mapColl[tate][yoko].left -= player.speed;
-						mapColl[tate][yoko].right -= player.speed;
+						mapColl[tate][yoko].left -= player.speed; //マップを動かす
+						mapColl[tate][yoko].right -= player.speed; //マップを動かす
 					}
 				}
+
+				for (int i = 0; i < GoalCnt; i++)
+				{
+					GoalRect[i].left -= player.speed;  //ゴールを動かす
+					GoalRect[i].right -= player.speed;  //ゴールを動かす
+				}
+
+				for (int i = 0; i < ItemCnt; i++)
+				{
+					ItemRect[i].left -= player.speed;  //アイテムを動かす
+					ItemRect[i].right -= player.speed;  //アイテムを動かす
+				}
+
+				//enemy[i].coll.left -= player.speed; //敵キャラを動かす
+				//enemy[i].coll.right -= player.speed;  //敵キャラを動かす
 			}
-			//player.CenterX = player.CenterX - player.speed;
 		}
 
 		player.coll.left = player.CenterX - mapChip.width / 2 + 5;
@@ -1137,80 +1134,61 @@ VOID MY_PLAY_PROC(VOID)
 		PlayerRect.right = player.image.x + player.image.width / 2 + CollRange;
 		PlayerRect.bottom = player.image.y + player.image.height / 2 + CollRange;
 
-		if (Get) {
-			if (MY_CHECK_RECT_COLL(PlayerRect, ItemRect) == TRUE) {
-				MessageBox(GetMainWindowHandle(), ITEM_GET_CAPTION, ITEM_GET_TITLE, MB_OK);
-				IsKey = true;		//アイテム獲得状態
-				Get = false;		//アイテムの判定を消す
-
-			}
-		}
-
-		if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect) == TRUE)
+		for (int i = 0; i < ItemCnt; i++)
 		{
-			if (IsKey) {
-				IsKey = false;	//アイテム獲得をしていない状態に
-				Get = true;		//アイテムの判定を戻す
-				Miss = true;		//アイテムを持っていない状態の時の処理判定
+			if (Get) {
+				if (MY_CHECK_RECT_COLL(PlayerRect, ItemRect[i]) == TRUE) {
+					MessageBox(GetMainWindowHandle(), ITEM_GET_CAPTION, ITEM_GET_TITLE, MB_OK);
+					IsKey = true;		//アイテム獲得状態
+					Get = false;		//アイテムの判定を消す
 
-				if (CheckSoundMem(BGM.handle) != 0) {
-					StopSoundMem(BGM.handle);
-				}
-
-				GameEndkind = GAME_END_COMP;
-				GameScene = GAME_SCENE_END;
-
-				return;
-			}
-
-			else {
-				if (Miss) {	//メッセージが永遠と出力されるバグ修正
-					MessageBox(GetMainWindowHandle(), ITEM_MISS_CAPTION, ITEM_MISS_TITLE, MB_OK);
-					Miss = false;
 				}
 			}
 		}
 
-		for (int i = 0; i < enemyCnt; i++)
+		for (int i = 0; i < GoalCnt; i++)
 		{
-			if (enemy[i].view == TRUE)
+			if (MY_CHECK_RECT_COLL(PlayerRect, GoalRect[i]) == TRUE)
 			{
-				enemy[i].CenterX += enemy[i].Moveadd;
-				if (MY_CHECK_MAP1_PLAYER_COLL(enemy[i].coll) == TRUE)
-				{
-					enemy[i].CenterX -= enemy[i].Moveadd * 2;
-					enemy[i].Moveadd *= -1;
-				}
-				enemy[i].coll.left = enemy[i].CenterX - enemy[i].image.width / 2 + 20;
-				enemy[i].coll.top = enemy[i].CenterY - enemy[i].image.height / 2 + 20;
-				enemy[i].coll.right = enemy[i].CenterX + enemy[i].image.width / 2 - 20;
-				enemy[i].coll.bottom = enemy[i].CenterY + enemy[i].image.height / 2 - 20;
+				if (IsKey) {
+					IsKey = false;	//アイテム獲得をしていない状態に
+					Get = true;		//アイテムの判定を戻す
+					Miss = true;		//アイテムを持っていない状態の時の処理判定
 
-				if (enemy[i].image.x >= 0 && enemy[i].image.x <= GAME_WIDTH)
-				{
-					enemy[i].image.x = enemy[i].CenterX - enemy[i].image.width / 2;
-					enemy[i].image.y = enemy[i].CenterY - enemy[i].image.height / 2;
-
-					enemy[i].collBeforePt.x = enemy[i].CenterX;
-					enemy[i].collBeforePt.y = enemy[i].CenterY;
-				}
-
-				if (MY_CHECK_RECT_COLL(PlayerRect, enemy[i].coll) == TRUE  /*|| TimeLim <= 0*/)
-				{
-					if (CheckSoundMem(BGM.handle) != 0)
-					{
+					if (CheckSoundMem(BGM.handle) != 0) {
 						StopSoundMem(BGM.handle);
 					}
 
-					SetMouseDispFlag(TRUE);
-
-					GameEndkind = GAME_END_FAIL;
-
+					GameEndkind = GAME_END_COMP;
 					GameScene = GAME_SCENE_END;
 
 					return;
 				}
+
+				else {
+					if (Miss) {	//メッセージが永遠と出力されるバグ修正
+						MessageBox(GetMainWindowHandle(), ITEM_MISS_CAPTION, ITEM_MISS_TITLE, MB_OK);
+						Miss = false;
+					}
+				}
 			}
+		}
+
+		//制限時間エンド画面へ遷移
+		if(TimeCou / GAME_FPS >= GAME_TIME_LIMT)
+		{
+			if (CheckSoundMem(BGM.handle) != 0)
+			{
+				StopSoundMem(BGM.handle);
+			}
+
+			SetMouseDispFlag(TRUE);
+
+			GameEndkind = GAME_END_FAIL;
+
+			GameScene = GAME_SCENE_END;
+
+			return;
 		}
 
 		if (player.image.x > GAME_WIDTH || player.image.y > GAME_HEIGHT
@@ -1251,6 +1229,7 @@ VOID MY_PLAY_PROC(VOID)
 		return;
 	}
 }
+
 VOID MY_PLAY_DRAW(VOID)
 {
 
@@ -1273,6 +1252,7 @@ VOID MY_PLAY_DRAW(VOID)
 				mapChip.handle[map[tate][yoko].kind],
 				TRUE);
 
+			//当たり判定の描画
 			switch (map[tate][yoko].kind)
 			{
 			case k:
@@ -1318,7 +1298,6 @@ VOID MY_PLAY_DRAW(VOID)
 					false
 				);
 				break;
-
 			}
 
 		}
@@ -1337,133 +1316,34 @@ VOID MY_PLAY_DRAW(VOID)
 		false
 	);
 
-	//敵の当たり判定の描画
-	DrawBox(
-		enemy->coll.left - player.mapDisX,
-		enemy->coll.top - player.mapDisY,
-		enemy->coll.right - player.mapDisX,
-		enemy->coll.bottom - player.mapDisY,
-		GetColor(255, 255, 0),
-		false
-	);
+	//制限時間のカウントダウンの描画
+	DrawFormatString( 0, 0, GetColor(255, 255, 255), "TIME:%d", GAME_TIME_LIMT - TimeCou / GAME_FPS);
 
-	for (int i = 0; i < enemyCnt; i++)
-	{
-		if (enemy[i].view == TRUE) {
-			DrawGraph(enemy[i].image.x - player.mapDisX, enemy[i].image.y - player.mapDisY, enemy[i].image.handle, TRUE);
-		}
-	}
+	////敵の当たり判定の描画
+	//DrawBox(
+	//	enemy->coll.left - player.mapDisX,
+	//	enemy->coll.top - player.mapDisY,
+	//	enemy->coll.right - player.mapDisX,
+	//	enemy->coll.bottom - player.mapDisY,
+	//	GetColor(255, 255, 0),
+	//	false
+	//);
 
-//if (player.CenterX < GAME_WIDTH /2 )
-//{
-//	if (player.CenterY < GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//
-//	}
-//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//	else
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//}
-//
-//if (player.CenterX > (GAME_MAP_YOKO_MAX * mapChip.width) - GAME_WIDTH / 2)
-//{
-//	if (player.CenterY < GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//	else
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//}
-//else
-//{
-//	if (player.CenterY < GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//	else if (player.CenterY > (GAME_MAP_TATE_MAX * mapChip.height) - GAME_HEIGHT / 2)
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//	else
-//	{
-//		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-//		for (int tate = 0; tate < GAME_MAP_TATE_MAX; tate++)
-//		{
-//			for (int yoko = 0; yoko < GAME_MAP_YOKO_MAX; yoko++)
-//			{
-//				DrawGraph(map[tate][yoko].x, map[tate][yoko].y, mapChip.handle[map[tate][yoko].kind], TRUE);
-//			}
-//		}
-//	}
-//}
+	//for (int i = 0; i < enemyCnt; i++)
+	//{
+	//	if (enemy[i].view == TRUE) {
+	//		DrawGraph(enemy[i].image.x - player.mapDisX, enemy[i].image.y - player.mapDisY, enemy[i].image.handle, TRUE);
+	//	}
+	//	//敵の当たり判定の描画
+	//	DrawBox(
+	//		enemy->coll.left - player.mapDisX,
+	//		enemy->coll.top - player.mapDisY,
+	//		enemy->coll.right - player.mapDisX,
+	//		enemy->coll.bottom - player.mapDisY,
+	//		GetColor(255, 255, 0),
+	//		false
+	//	);
+	//}
 	return;
 }
 VOID MY_END(VOID)
@@ -1697,22 +1577,22 @@ BOOL MY_LOAD_IMAGE(VOID)
 	player.CenterY = player.image.y + player.image.height / 2;
 	player.speed = CHARA_SPEED_HIGH;
 
-	for (int i = 0; i < ENEMY_MAX; i++)
-	{
-		strcpy_s(enemy[i].image.path, IMAGE_ENEMY_PATH);
-		enemy[i].image.handle = LoadGraph(enemy[i].image.path);
-		if (enemy[i].image.handle == -1)
-		{
-			MessageBox(GetMainWindowHandle(), IMAGE_ENEMY_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
-			return(FALSE);
-		}
-		GetGraphSize(enemy[i].image.handle, &enemy[i].image.width, &enemy[i].image.height);
-		enemy[i].image.x = GAME_WIDTH / 2 - enemy[i].image.width / 2;
-		enemy[i].image.y = GAME_HEIGHT / 2 - enemy[i].image.height / 2;
-		enemy[i].CenterX = enemy[i].image.x + enemy[i].image.width / 2;
-		enemy[i].CenterY = enemy[i].image.y + enemy[i].image.height / 2;
-		enemy[i].speed = CHARA_SPEED_LOW;
-	}
+	//for (int i = 0; i < ENEMY_MAX; i++)
+	//{
+	//	strcpy_s(enemy[i].image.path, IMAGE_ENEMY_PATH);
+	//	enemy[i].image.handle = LoadGraph(enemy[i].image.path);
+	//	if (enemy[i].image.handle == -1)
+	//	{
+	//		MessageBox(GetMainWindowHandle(), IMAGE_ENEMY_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+	//		return(FALSE);
+	//	}
+	//	GetGraphSize(enemy[i].image.handle, &enemy[i].image.width, &enemy[i].image.height);
+	//	enemy[i].image.x = GAME_WIDTH / 2 - enemy[i].image.width / 2;
+	//	enemy[i].image.y = GAME_HEIGHT / 2 - enemy[i].image.height / 2;
+	//	enemy[i].CenterX = enemy[i].image.x + enemy[i].image.width / 2;
+	//	enemy[i].CenterY = enemy[i].image.y + enemy[i].image.height / 2;
+	//	enemy[i].speed = CHARA_SPEED_LOW;
+	//}
 
 	int mapRes = LoadDivGraph(
 		GAME_MAP_PATH,
@@ -1771,7 +1651,7 @@ VOID MY_DELETE_IMAGE(VOID)
 	}
 	DeleteGraph(player.image.handle);
 
-	for (int i = 0; i < ENEMY_MAX; i++)DeleteGraph(enemy[i].image.handle);
+	//for (int i = 0; i < ENEMY_MAX; i++)DeleteGraph(enemy[i].image.handle);
 
 	DeleteGraph(ImageTitleBk.handle);
 	DeleteGraph(ImageTitleROGO.image.handle);
@@ -1857,21 +1737,6 @@ BOOL MY_CHECK_MAP1_PLAYER_COLL(RECT player)
 	}
 	return FALSE;
 }
-
-//BOOL MY_CHECK_MAP1_GOAL(RECT player)
-//{
-//	for (int tate = 0; tate <= GAME_MAP_TATE_MAX; tate++)
-//	{
-//		for (int yoko = 0; yoko <= GAME_MAP_YOKO_MAX; yoko++)
-//		{
-//			if (MY_CHECK_RECT_COLL(player, mapColl[tate][yoko]) == TRUE)
-//			{
-//				if (map[tate][yoko].kind == g) { return TRUE; }
-//			}
-//		}
-//	}
-//	return FALSE;
-//}
 
 BOOL MY_CHECK_RECT_COLL(RECT a, RECT b)
 {
