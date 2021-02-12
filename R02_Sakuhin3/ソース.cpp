@@ -17,9 +17,6 @@
 #define FONT_PATH_MAX   255
 #define PATH_MAX   255
 
-//#define FONT_TANU_PATH         TEXT("TanukiMagic.ttf")
-//#define FONT_TANU_NAME         TEXT("たぬき油性マジック")
-
 #define FONT_MS_PATH           TEXT("chogokubosogothic.ttf")
 #define FONT_MS_NAME           TEXT("超極細ゴシック")
 
@@ -30,8 +27,6 @@
 
 #define IMAGE_BACK_PATH        TEXT(".\\IMAGE\\toshi.png")
 #define IMAGE_PLAYER_PATH      TEXT(".\\IMAGE\\syujin.png")
-
-//#define IMAGE_ENEMY_PATH       TEXT(".\\IMAGE\\police.png")
 
 #define IMAGE_TITLE_BK_PATH       TEXT(".\\IMAGE\\kangoku.jpg")
 #define IMAGE_TITLE_ROGO_PATH     TEXT(".\\IMAGE\\title.png")
@@ -68,8 +63,6 @@
 #define MUSIC_BGM_COMP_PATH         TEXT(".\\MUSIC\\famipop3.mp3")
 #define MUSIC_BGM_FAIL_PATH         TEXT(".\\MUSIC\\牢獄.mp3")
 
-//#define ENEMY_MAX              20
-
 #define GOAL_MAX               5
 
 #define ITEM_MAX               5
@@ -97,7 +90,7 @@
 
 //制限時間
 int TimeCou = 0;
-#define GAME_TIME_LIMT  10
+#define GAME_TIME_LIMT  120
 
 enum GAME_MAP_KIND
 {
@@ -180,21 +173,6 @@ typedef struct STRUCT_CHARA
 
 }CHARA;
 
-//typedef struct STRUCT_ENEMY
-//{
-//	IMAGE image;
-//	int speed;
-//	int CenterX;
-//	int CenterY;
-//	int Moveadd;
-//
-//	bool view = FALSE;
-//
-//	RECT coll;
-//	iPOINT collBeforePt;
-//
-//}ENEMY;
-
 typedef struct STRUCT_IMAGE_BACK
 {
 	IMAGE image;
@@ -260,9 +238,6 @@ int GoalCnt = 0;
 RECT ItemRect[ITEM_MAX] = { -1,-1,-1,-1 };
 int ItemCnt = 0;
 
-
-//IMAGE ImageBack;
-
 IMAGE_BACK ImageBack[IMAGE_BACK_NUM];
 
 IMAGE ImageTitleBk;
@@ -306,7 +281,7 @@ GAME_MAP_KIND mapData[GAME_MAP_TATE_MAX][GAME_MAP_YOKO_MAX]{
 	k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,t,t,t,t,t,k,k,k,t,t,t,t,t,k,k,k,t,t,t,t,k,k,k,t,t,t,t,t,k,    // 9
 	k,t,k,k,k,k,t,t,t,t,k,k,t,t,t,t,t,k,t,k,k,k,t,t,t,k,k,t,t,t,t,t,t,k,k,k,k,t,t,t,k,k,t,t,k,    // 20
 	k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,k,t,t,t,t,k,t,k,t,t,t,t,t,k,k,t,t,t,t,t,k,t,k,t,t,t,t,t,k,    // 1
-	k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,k,t,t,t,e,t,t,t,t,t,t,t,t,t,t,k,t,t,t,e,t,t,t,t,t,t,t,t,t,k,    // 2 
+	k,t,t,t,t,t,t,t,t,t,t,t,t,t,k,k,t,t,t,t,t,t,t,t,t,t,t,t,t,t,k,t,t,t,k,t,t,t,t,t,t,t,t,t,k,    // 2 
 	k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k,k     // 3
 };
 
@@ -407,8 +382,6 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 
 	SetWindowIconID(IDI_ICON1);
 
-	//extern int Game_Count;
-
 	if (DxLib_Init() == -1) { return -1; }
 
 	if (MY_LOAD_IMAGE() == FALSE) { return -1; }
@@ -489,16 +462,6 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpCmdLine
 				ItemRect[ItemCnt].bottom = mapChip.height * (tate + 1);
 				ItemCnt++;
 			}
-
-			////敵の当たり判定
-			//if (mapData[tate][yoko] == e && enemyCnt < ENEMY_MAX)
-			//{
-			//	enemyPt[enemyCnt].x = mapChip.width * yoko  + mapChip.width / 2;
-			//	enemyPt[enemyCnt].y = mapChip.height * tate + mapChip.height / 2;
-			//	enemy[enemyCnt].view = TRUE;
-			//	enemyCnt++;
-			//	map[tate][yoko].kind = t;  //マップ上では通路を表してる
-			//}
 		}
 	}
 
@@ -863,10 +826,6 @@ VOID MY_PLAY_PROC(VOID)
 				ItemRect[i].bottom += player.speed;  //アイテムを動かす
 			}
 
-			//enemy[i].coll.top += player.speed; //敵キャラを動かす
-			//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
-
-
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
 			player.coll.right = player.CenterX + mapChip.width / 2 - 5;
@@ -899,10 +858,7 @@ VOID MY_PLAY_PROC(VOID)
 					ItemRect[i].top -= player.speed;  //アイテムを動かす
 					ItemRect[i].bottom -= player.speed;  //アイテムを動かす
 				}
-				//enemy[i].coll.top += player.speed; //敵キャラを動かす
-				//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
 			}
-			//player.CenterY = player.CenterY - player.speed;
 		}
 
 		//プレイヤーの下移動
@@ -932,9 +888,6 @@ VOID MY_PLAY_PROC(VOID)
 				ItemRect[i].top -= player.speed;  //アイテムを動かす
 				ItemRect[i].bottom -= player.speed;  //アイテムを動かす
 			}
-
-			//enemy[i].coll.top -= player.speed; //敵キャラを動かす
-			//enemy[i].coll.bottom -= player.speed;  //敵キャラを動かす
 
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
@@ -968,9 +921,6 @@ VOID MY_PLAY_PROC(VOID)
 					ItemRect[i].bottom += player.speed;  //アイテムを動かす
 				}
 
-				//enemy[i].coll.top += player.speed; //敵キャラを動かす
-				//enemy[i].coll.bottom += player.speed;  //敵キャラを動かす
-
 			}
 			//player.CenterY = player.CenterY + player.speed;
 		}
@@ -1003,9 +953,6 @@ VOID MY_PLAY_PROC(VOID)
 				ItemRect[i].right -= player.speed;  //アイテムを動かす
 			}
 
-			//enemy[i].coll.left -= player.speed; //敵キャラを動かす
-			//enemy[i].coll.right -= player.speed;  //敵キャラを動かす
-
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
 			player.coll.right = player.CenterX + mapChip.width / 2 - 5;
@@ -1037,9 +984,6 @@ VOID MY_PLAY_PROC(VOID)
 					ItemRect[i].left += player.speed;  //アイテムを動かす
 					ItemRect[i].right += player.speed;  //アイテムを動かす
 				}
-
-				//enemy[i].coll.left += player.speed; //敵キャラを動かす
-				//enemy[i].coll.right += player.speed;  //敵キャラを動かす
 			}
 			//player.CenterX = player.CenterX + player.speed;
 		}
@@ -1072,9 +1016,6 @@ VOID MY_PLAY_PROC(VOID)
 				ItemRect[i].right += player.speed;  //アイテムを動かす
 			}
 
-			//enemy[i].coll.left += player.speed; //敵キャラを動かす
-			//enemy[i].coll.right += player.speed;  //敵キャラを動かす
-
 			player.coll.left = player.CenterX - mapChip.width / 2 + 5;
 			player.coll.top = player.CenterY - mapChip.height / 2 + 5;
 			player.coll.right = player.CenterX + mapChip.width / 2 - 5;
@@ -1105,9 +1046,6 @@ VOID MY_PLAY_PROC(VOID)
 					ItemRect[i].left -= player.speed;  //アイテムを動かす
 					ItemRect[i].right -= player.speed;  //アイテムを動かす
 				}
-
-				//enemy[i].coll.left -= player.speed; //敵キャラを動かす
-				//enemy[i].coll.right -= player.speed;  //敵キャラを動かす
 			}
 		}
 
@@ -1252,53 +1190,53 @@ VOID MY_PLAY_DRAW(VOID)
 				mapChip.handle[map[tate][yoko].kind],
 				TRUE);
 
-			//当たり判定の描画
-			switch (map[tate][yoko].kind)
-			{
-			case k:
-				DrawBox(
-					mapColl[tate][yoko].left,
-					mapColl[tate][yoko].top,
-					mapColl[tate][yoko].right,
-					mapColl[tate][yoko].bottom,
-					GetColor(255, 0, 0),
-					false
-				);
-				break;
+			////当たり判定の描画
+			//switch (map[tate][yoko].kind)
+			//{
+			//case k:
+			//	DrawBox(
+			//		mapColl[tate][yoko].left,
+			//		mapColl[tate][yoko].top,
+			//		mapColl[tate][yoko].right,
+			//		mapColl[tate][yoko].bottom,
+			//		GetColor(255, 0, 0),
+			//		false
+			//	);
+			//	break;
 
-			case t:
-				DrawBox(
-					mapColl[tate][yoko].left,
-					mapColl[tate][yoko].top,
-					mapColl[tate][yoko].right,
-					mapColl[tate][yoko].bottom,
-					GetColor(255, 0, 255),
-					false
-				);
-				break;
+			//case t:
+			//	DrawBox(
+			//		mapColl[tate][yoko].left,
+			//		mapColl[tate][yoko].top,
+			//		mapColl[tate][yoko].right,
+			//		mapColl[tate][yoko].bottom,
+			//		GetColor(255, 0, 255),
+			//		false
+			//	);
+			//	break;
 
-			case g:
-				DrawBox(
-					mapColl[tate][yoko].left,
-					mapColl[tate][yoko].top,
-					mapColl[tate][yoko].right,
-					mapColl[tate][yoko].bottom,
-					GetColor(0, 255, 255),
-					false
-				);
-				break;
+			//case g:
+			//	DrawBox(
+			//		mapColl[tate][yoko].left,
+			//		mapColl[tate][yoko].top,
+			//		mapColl[tate][yoko].right,
+			//		mapColl[tate][yoko].bottom,
+			//		GetColor(0, 255, 255),
+			//		false
+			//	);
+			//	break;
 
-			case i:
-				DrawBox(
-					mapColl[tate][yoko].left,
-					mapColl[tate][yoko].top,
-					mapColl[tate][yoko].right,
-					mapColl[tate][yoko].bottom,
-					GetColor(255, 255, 255),
-					false
-				);
-				break;
-			}
+			//case i:
+			//	DrawBox(
+			//		mapColl[tate][yoko].left,
+			//		mapColl[tate][yoko].top,
+			//		mapColl[tate][yoko].right,
+			//		mapColl[tate][yoko].bottom,
+			//		GetColor(255, 255, 255),
+			//		false
+			//	);
+			//	break;
+			//}
 
 		}
 
@@ -1307,45 +1245,21 @@ VOID MY_PLAY_DRAW(VOID)
 	DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
 
 	//プレイヤーの当たり判定の描画
-	DrawBox(
-		player.coll.left,
-		player.coll.top,
-		player.coll.right,
-		player.coll.bottom,
-		GetColor(0, 255, 0),
-		false
-	);
+	//DrawBox(
+	//	player.coll.left,
+	//	player.coll.top,
+	//	player.coll.right,
+	//	player.coll.bottom,
+	//	GetColor(0, 255, 0),
+	//	false
+	//);
 
 	//制限時間のカウントダウンの描画
 	DrawFormatString( 0, 0, GetColor(255, 255, 255), "TIME:%d", GAME_TIME_LIMT - TimeCou / GAME_FPS);
 
-	////敵の当たり判定の描画
-	//DrawBox(
-	//	enemy->coll.left - player.mapDisX,
-	//	enemy->coll.top - player.mapDisY,
-	//	enemy->coll.right - player.mapDisX,
-	//	enemy->coll.bottom - player.mapDisY,
-	//	GetColor(255, 255, 0),
-	//	false
-	//);
-
-	//for (int i = 0; i < enemyCnt; i++)
-	//{
-	//	if (enemy[i].view == TRUE) {
-	//		DrawGraph(enemy[i].image.x - player.mapDisX, enemy[i].image.y - player.mapDisY, enemy[i].image.handle, TRUE);
-	//	}
-	//	//敵の当たり判定の描画
-	//	DrawBox(
-	//		enemy->coll.left - player.mapDisX,
-	//		enemy->coll.top - player.mapDisY,
-	//		enemy->coll.right - player.mapDisX,
-	//		enemy->coll.bottom - player.mapDisY,
-	//		GetColor(255, 255, 0),
-	//		false
-	//	);
-	//}
 	return;
 }
+
 VOID MY_END(VOID)
 {
 	MY_END_PROC();
@@ -1576,23 +1490,6 @@ BOOL MY_LOAD_IMAGE(VOID)
 	player.CenterX = player.image.x + player.image.width / 2;
 	player.CenterY = player.image.y + player.image.height / 2;
 	player.speed = CHARA_SPEED_HIGH;
-
-	//for (int i = 0; i < ENEMY_MAX; i++)
-	//{
-	//	strcpy_s(enemy[i].image.path, IMAGE_ENEMY_PATH);
-	//	enemy[i].image.handle = LoadGraph(enemy[i].image.path);
-	//	if (enemy[i].image.handle == -1)
-	//	{
-	//		MessageBox(GetMainWindowHandle(), IMAGE_ENEMY_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
-	//		return(FALSE);
-	//	}
-	//	GetGraphSize(enemy[i].image.handle, &enemy[i].image.width, &enemy[i].image.height);
-	//	enemy[i].image.x = GAME_WIDTH / 2 - enemy[i].image.width / 2;
-	//	enemy[i].image.y = GAME_HEIGHT / 2 - enemy[i].image.height / 2;
-	//	enemy[i].CenterX = enemy[i].image.x + enemy[i].image.width / 2;
-	//	enemy[i].CenterY = enemy[i].image.y + enemy[i].image.height / 2;
-	//	enemy[i].speed = CHARA_SPEED_LOW;
-	//}
 
 	int mapRes = LoadDivGraph(
 		GAME_MAP_PATH,
